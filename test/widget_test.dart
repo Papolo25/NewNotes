@@ -7,7 +7,7 @@ void main() {
   testWidgets('puede crear una nota', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-    expect(find.text('Mis notas'), findsOneWidget);
+    expect(find.text('TODAS MIS NOTAS'), findsOneWidget);
     expect(find.text('No tienes notas todavía'), findsOneWidget);
 
     await tester.tap(find.byType(FloatingActionButton));

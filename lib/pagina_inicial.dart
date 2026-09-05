@@ -26,8 +26,10 @@ class _InicioPageState extends State<InicioPage> {
           blue: 0.047,
         ),
         title: const Text('TODAS MIS NOTAS'),
-        titleTextStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0))
-        fontWeight: FontWeight.bold,
+        titleTextStyle: const TextStyle(
+          color: Color.fromARGB(255, 0, 0, 0),
+          fontWeight: FontWeight.bold,
+        ),
       ),
 
       body: notas.isEmpty
