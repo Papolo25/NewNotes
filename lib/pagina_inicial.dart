@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'nota.dart';
 import 'nota_cardborde.dart';
 import 'crear_nota.dart';
@@ -18,57 +19,81 @@ class _InicioPageState extends State<InicioPage> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 250, 188, 188),
-        title: const Text('Mis notas'),
-        titleTextStyle: const TextStyle(
-          color: Colors.white,
+        backgroundColor: const Color.from(
+          alpha: 1,
+          red: 0.941,
+          green: 0.627,
+          blue: 0.047,
         ),
+        title: const Text('TODAS MIS NOTAS'),
+        titleTextStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0))
+        fontWeight: FontWeight.bold,
       ),
 
       body: notas.isEmpty
           ? const Center(
-            child: Text('No tienes notas todavía',
+              child: Text(
+                'No tienes notas todavía',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Color.fromARGB(255, 250, 154, 9),
                   fontSize: 18,
                 ),
               ),
-          )
+            )
           : GridView.builder(
-    padding: const EdgeInsets.all(12),
-    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1,
-    ),
-    itemCount: notas.length,
-    itemBuilder: (context, index) {
-      return NotaCard(
-        nota: notas[index],
-        onTap: () {
-          // Aquí abriremos la nota
-        },
-      );
-    },
-  ),
+              padding: const EdgeInsets.all(6),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
+                mainAxisExtent: 96,
+              ),
+              itemCount: notas.length,
+              itemBuilder: (context, index) {
+                return NotaCard(
+                  nota: notas[index],
+                  onTap: () async {
+                    final dynamic resultado = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CrearNotaPage(notaInicial: notas[index]),
+                      ),
+                    );
+
+                    if (!mounted || resultado == null) {
+                      return;
+                    }
+
+                    setState(() {
+                      if (resultado == 'delete') {
+                        notas.removeAt(index);
+                      } else if (resultado is Nota) {
+                        notas[index] = resultado;
+                      }
+                    });
+                  },
+                );
+              },
+            ),
 
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color.fromARGB(255, 247, 151, 8),
         onPressed: () async {
-          final Nota? nuevaNota = await Navigator.push(
+          final dynamic nuevaNota = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const CrearNotaPage(),
-            ),
+            MaterialPageRoute(builder: (context) => const CrearNotaPage()),
           );
 
           if (!mounted || nuevaNota == null) {
             return;
           }
 
-          setState(() {
-            notas.add(nuevaNota);
-          });
+          if (nuevaNota is Nota) {
+            setState(() {
+              notas.add(nuevaNota);
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),

@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+
 import 'nota.dart';
 
 class NotaCard extends StatelessWidget {
   final Nota nota;
   final VoidCallback? onTap;
 
-  const NotaCard({
-    super.key,
-    required this.nota,
-    this.onTap,
-  });
+  const NotaCard({super.key, required this.nota, this.onTap});
+
+  String get descripcionVisible {
+    const limite = 20;
+
+    if (nota.descripcion.length <= limite) {
+      return nota.descripcion;
+    }
+
+    return '${nota.descripcion.substring(0, limite)}...';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,21 +24,16 @@ class NotaCard extends StatelessWidget {
       child: Card(
         color: const Color(0xFF1E1E1E),
 
-        margin: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 6,
-        ),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
 
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
 
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           onTap: onTap,
 
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(6),
 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,21 +42,18 @@ class NotaCard extends StatelessWidget {
                   nota.titulo,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const Divider(height: 8, thickness: 1, color: Colors.white24),
 
                 Text(
-                  nota.descripcion,
-                  maxLines: 4,
+                  descripcionVisible,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
                 ),
               ],
             ),
