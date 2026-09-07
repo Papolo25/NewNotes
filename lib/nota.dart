@@ -4,11 +4,26 @@ class Nota {
   final DateTime fechaCreacion;
   DateTime fechaModificacion;
 
-  Nota({
-    required this.titulo,
-    required this.descripcion,
+  factory Nota({
+    required String titulo,
+    required String descripcion,
     DateTime? fechaCreacion,
     DateTime? fechaModificacion,
-  })  : fechaCreacion = fechaCreacion ?? DateTime.now(),
-        fechaModificacion = fechaModificacion ?? fechaCreacion ?? DateTime.now();
+  }) {
+    final fechaCreada = fechaCreacion ?? DateTime.now();
+
+    return Nota._(
+      titulo: titulo,
+      descripcion: descripcion,
+      fechaCreacion: fechaCreada,
+      fechaModificacion: fechaModificacion ?? fechaCreada,
+    );
+  }
+
+  Nota._({
+    required this.titulo,
+    required this.descripcion,
+    required this.fechaCreacion,
+    required this.fechaModificacion,
+  });
 }

@@ -18,10 +18,21 @@ class NotaCard extends StatelessWidget {
     return '${nota.descripcion.substring(0, limite)}...';
   }
 
-  String get fechaCreacionVisible {
-    final dia = nota.fechaCreacion.day.toString().padLeft(2, '0');
-    final mes = nota.fechaCreacion.month.toString().padLeft(2, '0');
-    return 'Creada: $dia/$mes/${nota.fechaCreacion.year}';
+  String _formatearFecha(DateTime fecha) {
+    final dia = fecha.day.toString().padLeft(2, '0');
+    final mes = fecha.month.toString().padLeft(2, '0');
+    return '$dia/$mes/${fecha.year}';
+  }
+
+  String get fechasVisibles {
+    final fechaCreada = 'Creada: ${_formatearFecha(nota.fechaCreacion)}';
+
+    if (nota.fechaCreacion == nota.fechaModificacion) {
+      return fechaCreada;
+    }
+
+    return '$fechaCreada\n'
+        'Modificada: ${_formatearFecha(nota.fechaModificacion)}';
   }
 
   @override
@@ -56,8 +67,8 @@ class NotaCard extends StatelessWidget {
                 ),
 
                 Text(
-                  fechaCreacionVisible,
-                  style: const TextStyle(color: Colors.white54, fontSize: 10),
+                  fechasVisibles,
+                  style: const TextStyle(color: Colors.white54, fontSize: 9),
                 ),
 
                 const Divider(height: 8, thickness: 1, color: Colors.white24),
