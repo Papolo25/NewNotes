@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'nota.dart';
 import 'nota_cardborde.dart';
 import 'crear_nota.dart';
+import 'ordenar_notas.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});
@@ -13,6 +14,15 @@ class InicioPage extends StatefulWidget {
 
 class _InicioPageState extends State<InicioPage> {
   List<Nota> notas = [];
+  TipoOrden ordenActual = TipoOrden.fechaCreacion;
+
+  void _ordenarNotas(TipoOrden orden) {
+    setState(() {
+      ordenActual = orden;
+      notas = ordenarNotas(notas, orden);
+    });
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +39,80 @@ class _InicioPageState extends State<InicioPage> {
         titleTextStyle: const TextStyle(
           color: Color.fromARGB(255, 0, 0, 0),
           fontWeight: FontWeight.bold,
+        ),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              icon: const Icon(Icons.filter_list),
+              tooltip: 'Ordenar notas',
+            ),
+          ),
+        ],
+      ),
+
+      endDrawer: Drawer(
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
+                child: Text(
+                  'Ordenar notas',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 250, 154, 9),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              RadioGroup<TipoOrden>(
+                groupValue: ordenActual,
+                onChanged: (orden) {
+                  if (orden != null) _ordenarNotas(orden);
+                },
+                child: const Column(
+                  children: [
+                    RadioListTile<TipoOrden>(
+                      value: TipoOrden.fechaCreacion,
+                      title: Text(
+                        'Fecha de creación',
+                        style: TextStyle(color: Color.fromARGB(255, 250, 154, 9)),
+                      ),
+                      subtitle:  Text(
+                        'Más recientes primero',
+                        style: TextStyle(color: Color.fromARGB(255, 252, 251, 251)),
+                      ),
+                    ),
+                    RadioListTile<TipoOrden>(
+                      value: TipoOrden.fechaModificacion,
+                      title:  Text(
+                        'Fecha de modificación',
+                        style: TextStyle(color: Color.fromARGB(255, 250, 154, 9)),
+                      ),
+                      subtitle:  Text(
+                        'Más recientes primero',
+                        style: TextStyle(color: Color.fromARGB(255, 253, 253, 252)),
+                      ),
+                    ),
+                    RadioListTile<TipoOrden>(
+                      value: TipoOrden.antiguedad,
+                      title:  Text(
+                        'Antigüedad',
+                        style: TextStyle(color: Color.fromARGB(255, 250, 154, 9)),
+                      ),
+                      subtitle:  Text(
+                        'Más antiguas primero',
+                        style: TextStyle(color: Color.fromARGB(255, 248, 248, 247)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
 
@@ -72,6 +156,7 @@ class _InicioPageState extends State<InicioPage> {
                         notas.removeAt(index);
                       } else if (resultado is Nota) {
                         notas[index] = resultado;
+                        notas = ordenarNotas(notas, ordenActual);
                       }
                     });
                   },
@@ -94,6 +179,7 @@ class _InicioPageState extends State<InicioPage> {
           if (nuevaNota is Nota) {
             setState(() {
               notas.add(nuevaNota);
+              notas = ordenarNotas(notas, ordenActual);
             });
           }
         },

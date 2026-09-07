@@ -44,6 +44,32 @@ void main() {
     await tester.tap(find.byIcon(Icons.delete));
     await tester.pumpAndSettle();
 
+    expect(find.text('¿Estás seguro de que quieres eliminar esta nota?'), findsOneWidget);
+
+    await tester.tap(find.text('Eliminar'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Mi nota'), findsNothing);
+  });
+
+  testWidgets('avisa antes de salir con cambios sin guardar', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MyApp());
+
+    await tester.tap(find.byType(FloatingActionButton));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField).at(0), 'Nota sin guardar');
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cambios sin guardar'), findsOneWidget);
+    expect(find.text('Tienes cambios sin guardar. ¿Quieres salir sin guardar?'), findsOneWidget);
+
+    await tester.tap(find.text('Seguir editando'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Crear nota'), findsOneWidget);
   });
 }

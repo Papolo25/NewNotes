@@ -14,8 +14,16 @@ class CrearNotaPage extends StatefulWidget {
 class _CrearNotaPageState extends State<CrearNotaPage> {
   late final TextEditingController _tituloController;
   late final TextEditingController _descripcionController;
+  late final String _tituloInicial;
+  late final String _descripcionInicial;
+
+  bool _cerrando = false;
 
   bool get isEditing => widget.notaInicial != null;
+
+  bool get hayCambiosSinGuardar =>
+      _tituloController.text != _tituloInicial ||
+      _descripcionController.text != _descripcionInicial;
 
   @override
   void initState() {
@@ -26,6 +34,8 @@ class _CrearNotaPageState extends State<CrearNotaPage> {
     _descripcionController = TextEditingController(
       text: widget.notaInicial?.descripcion ?? '',
     );
+    _tituloInicial = _tituloController.text;
+    _descripcionInicial = _descripcionController.text;
   }
 
   @override
@@ -46,20 +56,89 @@ class _CrearNotaPageState extends State<CrearNotaPage> {
       return;
     }
 
-    final notaGuardada = Nota(titulo: titulo, descripcion: descripcion);
+    final notaGuardada = Nota(
+      titulo: titulo,
+      descripcion: descripcion,
+      fechaCreacion: widget.notaInicial?.fechaCreacion,
+      fechaModificacion: DateTime.now(),
+    );
 
+    _cerrando = true;
     Navigator.pop(context, notaGuardada);
   }
 
-  void _eliminarNota() {
-    Navigator.pop(context, 'delete');
+  Future<void> _manejarIntentoDeSalida(
+    bool didPop,
+    Object? result,
+  ) async {
+    if (didPop || _cerrando || !mounted) {
+      return;
+    }
+
+    if (!hayCambiosSinGuardar) {
+      _cerrando = true;
+      Navigator.pop(context);
+      return;
+    }
+
+    final salirSinGuardar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cambios sin guardar'),
+        content: const Text(
+          'Tienes cambios sin guardar. ¿Quieres salir sin guardar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Seguir editando'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Salir sin guardar'),
+          ),
+        ],
+      ),
+    );
+
+    if (salirSinGuardar == true && mounted) {
+      _cerrando = true;
+      Navigator.pop(context);
+    }
+  }
+
+  Future<void> _eliminarNota() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar nota'),
+        content: const Text('¿Estás seguro de que quieres eliminar esta nota?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true && mounted) {
+      Navigator.pop(context, 'delete');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(234, 0, 0, 0),
-      appBar: AppBar(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: _manejarIntentoDeSalida,
+      child: Scaffold(
+        backgroundColor: const Color.fromARGB(234, 0, 0, 0),
+        appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 247, 151, 8),
         title: Text(isEditing ? 'Editar nota' : 'Crear nota'),
         actions: [
@@ -76,9 +155,9 @@ class _CrearNotaPageState extends State<CrearNotaPage> {
             tooltip: 'Guardar nota',
           ),
         ],
-      ),
+        ),
 
-      body: SafeArea(
+        body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -131,6 +210,7 @@ class _CrearNotaPageState extends State<CrearNotaPage> {
               const SizedBox(height: 20),
             ],
           ),
+        ),
         ),
       ),
     );

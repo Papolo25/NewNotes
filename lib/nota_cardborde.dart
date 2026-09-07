@@ -18,6 +18,12 @@ class NotaCard extends StatelessWidget {
     return '${nota.descripcion.substring(0, limite)}...';
   }
 
+  String get fechaCreacionVisible {
+    final dia = nota.fechaCreacion.day.toString().padLeft(2, '0');
+    final mes = nota.fechaCreacion.month.toString().padLeft(2, '0');
+    return 'Creada: $dia/$mes/${nota.fechaCreacion.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
@@ -40,11 +46,18 @@ class NotaCard extends StatelessWidget {
               children: [
                 Text(
                   nota.titulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+
+                Text(
+                  fechaCreacionVisible,
+                  style: const TextStyle(color: Colors.white54, fontSize: 10),
                 ),
 
                 const Divider(height: 8, thickness: 1, color: Colors.white24),
