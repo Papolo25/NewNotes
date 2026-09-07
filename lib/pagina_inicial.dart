@@ -14,6 +14,7 @@ class InicioPage extends StatefulWidget {
 
 class _InicioPageState extends State<InicioPage> {
   List<Nota> notas = [];
+  List<Nota> notasEliminadas = [];
   TipoOrden ordenActual = TipoOrden.fechaCreacion;
 
   void _ordenarNotas(TipoOrden orden) {
@@ -22,6 +23,39 @@ class _InicioPageState extends State<InicioPage> {
       notas = ordenarNotas(notas, orden);
     });
     Navigator.pop(context);
+  }
+
+  void _restaurarNota(Nota nota) {
+    setState(() {
+      notasEliminadas.remove(nota);
+      notas.add(nota);
+      notas = ordenarNotas(notas, ordenActual);
+    });
+    Navigator.pop(context);
+  }
+
+  Future<void> _eliminarDefinitivamente(Nota nota) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar definitivamente'),
+        content: const Text('Esta nota no se podrá recuperar.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true && mounted) {
+      setState(() => notasEliminadas.remove(nota));
+    }
   }
 
   @override
@@ -40,6 +74,13 @@ class _InicioPageState extends State<InicioPage> {
           color: Color.fromARGB(255, 0, 0, 0),
           fontWeight: FontWeight.bold,
         ),
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () => Scaffold.of(context).openDrawer(),
+            icon: const Icon(Icons.menu),
+            tooltip: 'Opciones',
+          ),
+        ),
         actions: [
           Builder(
             builder: (context) => IconButton(
@@ -49,6 +90,99 @@ class _InicioPageState extends State<InicioPage> {
             ),
           ),
         ],
+      ),
+
+      drawer: Drawer(
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 12),
+                child: Text(
+                  'Opciones',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 250, 154, 9),
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_outline,
+                  color: Color.fromARGB(255, 250, 154, 9),
+                ),
+                title: const Text(
+                  'Papelera',
+                  style: TextStyle(color: Colors.white),
+                ),
+                trailing: notasEliminadas.isEmpty
+                    ? null
+                    : CircleAvatar(
+                        radius: 12,
+                        backgroundColor: const Color.fromARGB(255, 250, 154, 9),
+                        child: Text(
+                          '${notasEliminadas.length}',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                onTap: () => Navigator.pop(context),
+              ),
+              const Divider(color: Colors.white24),
+              Expanded(
+                child: notasEliminadas.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'La papelera está vacía',
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: notasEliminadas.length,
+                        itemBuilder: (context, index) {
+                          final nota = notasEliminadas[index];
+                          return ListTile(
+                            title: Text(
+                              nota.titulo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: const Text(
+                              'Nota eliminada',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  onPressed: () => _restaurarNota(nota),
+                                  icon: const Icon(Icons.restore),
+                                  color: const Color.fromARGB(255, 250, 154, 9),
+                                  tooltip: 'Restaurar nota',
+                                ),
+                                IconButton(
+                                  onPressed: () =>
+                                      _eliminarDefinitivamente(nota),
+                                  icon: const Icon(Icons.delete_forever),
+                                  color: Colors.redAccent,
+                                  tooltip: 'Eliminar definitivamente',
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
       ),
 
       endDrawer: Drawer(
@@ -79,33 +213,45 @@ class _InicioPageState extends State<InicioPage> {
                       value: TipoOrden.fechaCreacion,
                       title: Text(
                         'Fecha de creación',
-                        style: TextStyle(color: Color.fromARGB(255, 250, 154, 9)),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 250, 154, 9),
+                        ),
                       ),
-                      subtitle:  Text(
+                      subtitle: Text(
                         'Más recientes primero',
-                        style: TextStyle(color: Color.fromARGB(255, 252, 251, 251)),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 252, 251, 251),
+                        ),
                       ),
                     ),
                     RadioListTile<TipoOrden>(
                       value: TipoOrden.fechaModificacion,
-                      title:  Text(
+                      title: Text(
                         'Fecha de modificación',
-                        style: TextStyle(color: Color.fromARGB(255, 250, 154, 9)),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 250, 154, 9),
+                        ),
                       ),
-                      subtitle:  Text(
+                      subtitle: Text(
                         'Más recientes primero',
-                        style: TextStyle(color: Color.fromARGB(255, 253, 253, 252)),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 253, 253, 252),
+                        ),
                       ),
                     ),
                     RadioListTile<TipoOrden>(
                       value: TipoOrden.antiguedad,
-                      title:  Text(
+                      title: Text(
                         'Antigüedad',
-                        style: TextStyle(color: Color.fromARGB(255, 250, 154, 9)),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 250, 154, 9),
+                        ),
                       ),
-                      subtitle:  Text(
+                      subtitle: Text(
                         'Más antiguas primero',
-                        style: TextStyle(color: Color.fromARGB(255, 248, 248, 247)),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 248, 248, 247),
+                        ),
                       ),
                     ),
                   ],
@@ -153,7 +299,7 @@ class _InicioPageState extends State<InicioPage> {
 
                     setState(() {
                       if (resultado == 'delete') {
-                        notas.removeAt(index);
+                        notasEliminadas.add(notas.removeAt(index));
                       } else if (resultado is Nota) {
                         notas[index] = resultado;
                         notas = ordenarNotas(notas, ordenActual);
